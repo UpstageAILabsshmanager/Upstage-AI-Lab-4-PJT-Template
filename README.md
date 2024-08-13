@@ -3,7 +3,7 @@
 
 - 증권 배당 데이터 및 관련 세법 QA Engine
 
-- 홍석천 페르소나 Chatbot
+- 유재석 페르소나 Chatbot
   
 
 <br>
@@ -14,8 +14,8 @@
 - 이 프로젝트는 증권 배당 데이터와 관련된 정보를 효율적으로 관리하고, 관련 세법에 대한 질문과 답변을 제공하는 QA(Question-Answering) 엔진을 구축하는 것입니다.
 - 사용자는 이 엔진을 통해 특정 기업의 배당 정보나 세법 관련 질문에 대한 답변을 신속하게 얻을 수 있습니다.
   
-- 이 프로젝트는 유명 인물인 홍석천의 페르소나를 바탕으로 한 Chatbot을 개발하는 것입니다.
-- 이 Chatbot은 홍석천의 말투, 스타일 등 홍석천이 나온 프로그램 텍스트 대화를 반영하여 사용자와 자연스러운 대화를 나누도록 설계됩니다. 
+- 이 프로젝트는 유명 인물인 유재석의 페르소나를 바탕으로 한 Chatbot을 개발하는 것입니다.
+- 이 Chatbot은 유재석의 말투, 스타일 등 유재석이 나온 프로그램 텍스트 대화를 반영하여 사용자와 자연스러운 대화를 나누도록 설계됩니다. 
 <br>
 
 ## 팀원 구성
@@ -121,78 +121,37 @@
 
 ### 작업 관리
 <예시>
-- GitHub Projects와 Issues를 사용하여 진행 상황을 공유했습니다.
-- 주간회의를 진행하며 작업 순서와 방향성에 대한 고민을 나누고 GitHub Wiki에 회의 내용을 기록했습니다.
-- 매일 오전 10시 데일리 스크럼을 통해 당일 목표와 개인 일정, 컨디션 등을 공유했습니다.
 
-<br>
-
-## 6. 트러블 슈팅
-- 에러가 왜 발생했는지, 어떻게 해결하였는지 작성
-
-<예시>
-
-### 증상
-
-- 코드 실행 
-```
-from langchain import PromptTemplate, OpenAI, LLMChain
-
-template = """문장: {sentence}
-{language}로 번역:"""
-prompt = PromptTemplate(template=template, input_variables=["sentence", "language"])
-
-llm = OpenAI(temperature=0)
-
-llm_chain = LLMChain(prompt=prompt, llm=llm)
-
-llm_chain.predict(sentence="탁자 위에 고양이가 있어요", language="영어")
-```
-
-
-- 다음 경고가 발생함
+- 아래와 같은 오류가 발생했습니다.
 
 ```
-C:\Users\yong\AppData\Local\Programs\Python\Python311\Lib\site-packages\langchain_core\_api\deprecation.py:139: LangChainDeprecationWarning: The class `LLMChain` was deprecated in LangChain 0.1.17 and will be removed in 0.3.0. Use RunnableSequence, e.g., `prompt | llm` instead.
+C:\Users\yong\AppData\Local\Programs\Python\Python311\Lib\site-packages\langchain_core\_api\deprecation.py:117: LangChainDeprecationWarning: The class `langchain_community.llms.openai.OpenAI` was deprecated in langchain-community 0.0.10 and will be removed in 0.2.0. An updated version of the class exists in the langchain-openai package and should be used instead. To use it run `pip install -U langchain-openai` and import as `from langchain_openai import OpenAI`.
   warn_deprecated(
 ```
 
+### 설명
+
+- langchain_community.llms.openai.OpenAI는 langchain-community 0.0.10에서 deprecate되었으며 0.2.0에서 제거될 예정입니다.
+- 업데이트된 버전의 클래스가 langchain-openai 패키지에 있으며 이것을 사용해야 합니다.
+
+
 ### 해결
 
+- 명령 프롬프트(또는 터미널)에서 다음 명령을 실행해 langchain-openai 패키지를 설치합니다.
 
 ```
-from langchain import PromptTemplate, OpenAI
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnableSequence, RunnablePassthrough
-
-template = """문장: {sentence}
-{language}로 번역:"""
-prompt = PromptTemplate(template=template, input_variables=["sentence", "language"])
-
-llm = OpenAI(temperature=0)
-
-output_parser = StrOutputParser()
-
-chain = RunnableSequence(
-    {
-        "sentence": RunnablePassthrough(),
-        "language": RunnablePassthrough()
-    }
-    | prompt
-    | llm
-    | output_parser
-)
-
-result = chain.invoke({
-    "sentence": "탁자 위에 고양이가 있어요",
-    "language": "영어"
-})
-print(result)
+pip install -U langchain-openai
 ```
+
+- 아래와 같이 import문 변경하면 해결됩니다.
+```
+from langchain_openai import OpenAI
+```
+
 
 <br>
 
-## 7. 프로젝트 후기
+## 5. 프로젝트 후기
 
 ### 팀원 1
 프로젝트 후기 작성
