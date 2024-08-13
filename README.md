@@ -43,22 +43,26 @@
 ### Pandas, NumPy
 
 - Pandas
-- 기업의 배당 데이터를 Pandas DataFrame으로 불러온 후, 각 기업의 배당 수익률을 계산하고, 연도별로 그룹화하여 평균 배당 수익률을 계산합니다.
-- 필터링 조건을 적용하여 특정 기업의 배당 데이터를 분석하거나, 원하는 형태로 데이터를 변형할 수 있습니다.  
+  - 기업의 배당 데이터를 Pandas DataFrame으로 불러온 후, 각 기업의 배당 수익률을 계산하고, 연도별로 그룹화하여 평균 배당 수익률을 계산합니다.
+  - 필터링 조건을 적용하여 특정 기업의 배당 데이터를 분석하거나, 원하는 형태로 데이터를 변형할 수 있습니다.  
 
 - Numpy
-- - 벡터화 연산을 사용하여, 3000여개 데이터를 효율적으로 처리합니다.
+  - 벡터화 연산을 사용하여, 3000여개 데이터를 효율적으로 처리합니다.
 
--Beautifulsoup
-- 네이버 증권 페이지에서 배당률, 주가 등의 정보를 포함한 HTML 테이블에서 데이터를 추출합니다.
+### Beautifulsoup, Selenium
+
+- Beautifulsoup
+  - 네이버 증권 페이지에서 배당률, 주가 등의 정보를 포함한 HTML 테이블에서 데이터를 추출합니다.
 
 - Selenium
-- 웹 페이지에서 동적 콘텐츠를 로드합니다.
-- 특정 종목의 배당 데이터를 얻기 위해 종목 검색 후, 관련 페이지로 이동해야 할 때, 이 과정을 자동화합니다. 
+  - 웹 페이지에서 동적 콘텐츠를 로드합니다.
+  - 특정 종목의 배당 데이터를 얻기 위해 종목 검색 후, 관련 페이지로 이동해야 할 때, 이 과정을 자동화합니다. 
+
+### 브랜치전략 
     
 - 브랜치 전략
-- Git-flow 전략을 기반으로 main, develop 브랜치와 feature 보조 브랜치를 운용했습니다.
-- main, develop, Feat 브랜치로 나누어 개발을 하였습니다.
+  - Git-flow 전략을 기반으로 main, develop 브랜치와 feature 보조 브랜치를 운용했습니다.
+  - main, develop, Feat 브랜치로 나누어 개발을 하였습니다.
     - **main** 브랜치는 배포 단계에서만 사용하는 브랜치입니다.
     - **develop** 브랜치는 개발 단계에서 git-flow의 master 역할을 하는 브랜치입니다.
     - **Feat** 브랜치는 기능 단위로 독립적인 개발 환경을 위하여 사용하고 merge 후 각 브랜치를 삭제해주었습니다.
@@ -128,22 +132,63 @@
 
 <예시>
 
-- SQL 연결 에러: connect timed out 문제 해결
+### 증상
 
-- 상황
--- SQLNonTransientConnectionException: Socket fail to connect to host:address=(host=nftselly.com)(port=3306)(type=primary). connect timed out이라는 에러를 마주하였다.
+- 코드 실행 
+```
+from langchain import PromptTemplate, OpenAI, LLMChain
 
-- 경과
-SQL이라는 단어와 3306이라는 포트를 보고 DB와 관련된 문제임을 단번에 알아차렸다.
+template = """문장: {sentence}
+{language}로 번역:"""
+prompt = PromptTemplate(template=template, input_variables=["sentence", "language"])
 
-- 원인
--- 순간 바로 생각해보니 AWS EC2에 인바운드 보안그룹 규칙을 편집할 떄, 깜빡하고 3306번 포트를 열지 않았음을 깨달았다.
+llm = OpenAI(temperature=0)
 
-- 조치
--- EC2 인스턴스의 보안그룹에 3306 TCP 포트를 열어주었더니 해결되었다.
+llm_chain = LLMChain(prompt=prompt, llm=llm)
 
-- 결론
--- 해당하는 포트만 열어줬었다는 것을 재빨리 깨달아서 문제를 신속하게 해결할 수 있었다.
+llm_chain.predict(sentence="탁자 위에 고양이가 있어요", language="영어")
+```
+
+
+- 다음 경고가 발생함
+
+```
+C:\Users\yong\AppData\Local\Programs\Python\Python311\Lib\site-packages\langchain_core\_api\deprecation.py:139: LangChainDeprecationWarning: The class `LLMChain` was deprecated in LangChain 0.1.17 and will be removed in 0.3.0. Use RunnableSequence, e.g., `prompt | llm` instead.
+  warn_deprecated(
+```
+
+### 해결
+
+
+```
+from langchain import PromptTemplate, OpenAI
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableSequence, RunnablePassthrough
+
+template = """문장: {sentence}
+{language}로 번역:"""
+prompt = PromptTemplate(template=template, input_variables=["sentence", "language"])
+
+llm = OpenAI(temperature=0)
+
+output_parser = StrOutputParser()
+
+chain = RunnableSequence(
+    {
+        "sentence": RunnablePassthrough(),
+        "language": RunnablePassthrough()
+    }
+    | prompt
+    | llm
+    | output_parser
+)
+
+result = chain.invoke({
+    "sentence": "탁자 위에 고양이가 있어요",
+    "language": "영어"
+})
+print(result)
+```
 
 <br>
 
